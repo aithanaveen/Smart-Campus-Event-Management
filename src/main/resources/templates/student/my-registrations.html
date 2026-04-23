@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('My Registrations - Smart Campus')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div style="margin-top: 76px;">
+    <div class="page-header">
+        <div class="container">
+            <h1>🎫 My Registrations</h1>
+            <p>View and manage your event registrations</p>
+        </div>
+    </div>
+
+    <div class="container py-4">
+        <div th:if="${param.feedback != null}" class="alert alert-success-custom alert-custom mb-4">
+            <i class="bi bi-check-circle"></i> Feedback submitted successfully!
+        </div>
+
+        <div class="table-custom">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Event</th>
+                        <th>Date</th>
+                        <th>Seat</th>
+                        <th>Code</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="reg : ${registrations}">
+                        <td>
+                            <strong th:text="${reg.event.title}">Event</strong>
+                            <br><small class="text-muted" th:text="${reg.event.venue}"></small>
+                        </td>
+                        <td th:text="${reg.event.eventDate}">Date</td>
+                        <td><span class="badge bg-primary" th:text="${reg.seatNumber}">Seat</span></td>
+                        <td><code th:text="${reg.registrationCode}">Code</code></td>
+                        <td>
+                            <span th:if="${reg.status.name() == 'CONFIRMED'}" class="badge bg-success">Confirmed</span>
+                            <span th:if="${reg.status.name() == 'CANCELLED'}" class="badge bg-danger">Cancelled</span>
+                            <br>
+                            <small th:if="${reg.attended}" class="text-success"><i class="bi bi-check-circle"></i> Attended</small>
+                        </td>
+                        <td>
+                            <div class="d-flex gap-1 flex-wrap">
+                                <a th:href="@{/student/registration/{id}/qr(id=${reg.id})}" class="btn btn-sm btn-outline-custom" title="Download QR Pass">
+                                    <i class="bi bi-qr-code"></i>
+                                </a>
+                                <a th:if="${reg.attended}" th:href="@{/student/certificate/{id}(id=${reg.event.id})}" class="btn btn-sm btn-success-custom" title="Download Certificate">
+                                    <i class="bi bi-award"></i>
+                                </a>
+                                <!-- Feedback Modal Trigger -->
+                                <button th:if="${reg.attended}" class="btn btn-sm btn-outline-custom" data-bs-toggle="modal"
+                                        th:data-bs-target="'#feedbackModal' + ${reg.event.id}" title="Submit Feedback">
+                                    <i class="bi bi-chat-dots"></i>
+                                </button>
+                            </div>
+
+                            <!-- Feedback Modal -->
+                            <div class="modal fade" th:id="'feedbackModal' + ${reg.event.id}" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content" style="border-radius: 16px;">
+                                        <div class="modal-header" style="background: var(--gradient-primary); color: white; border-radius: 16px 16px 0 0;">
+                                            <h5 class="modal-title">📝 Event Feedback</h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <form th:action="@{/student/feedback}" method="post">
+                                            <div class="modal-body">
+                                                <input type="hidden" name="eventId" th:value="${reg.event.id}">
+                                                <p class="text-muted">How was <strong th:text="${reg.event.title}"></strong>?</p>
+                                                <div class="mb-3">
+                                                    <label class="form-label-custom">Rating</label>
+                                                    <select name="rating" class="form-control form-control-custom" required>
+                                                        <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
+                                                        <option value="4">⭐⭐⭐⭐ Very Good</option>
+                                                        <option value="3">⭐⭐⭐ Good</option>
+                                                        <option value="2">⭐⭐ Fair</option>
+                                                        <option value="1">⭐ Poor</option>
+                                                    </select>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label-custom">Comments</label>
+                                                    <textarea name="comments" class="form-control form-control-custom" rows="3" placeholder="Share your experience..."></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="submit" class="btn btn-primary-custom">Submit Feedback</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div th:if="${#lists.isEmpty(registrations)}" class="card-custom p-5 text-center">
+            <div style="font-size: 4rem;">🎫</div>
+            <h4>No registrations yet</h4>
+            <p class="text-muted">Start by browsing and registering for events!</p>
+            <a th:href="@{/student/events}" class="btn btn-primary-custom">Browse Events</a>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: chatbot}"></div>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

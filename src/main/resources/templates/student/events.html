@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Browse Events - Smart Campus')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div style="margin-top: 76px;">
+    <div class="page-header">
+        <div class="container">
+            <h1>📅 Browse Events</h1>
+            <p>Discover and register for upcoming campus events</p>
+        </div>
+    </div>
+
+    <div class="container py-4">
+        <!-- Search & Filter Bar -->
+        <div class="card-custom p-4 mb-4">
+            <form th:action="@{/student/events}" method="get" class="row g-3 align-items-end">
+                <div class="col-lg-4">
+                    <label class="form-label-custom">Search Events</label>
+                    <input type="text" name="search" class="form-control form-control-custom" placeholder="Search by title or description..." th:value="${searchQuery}">
+                </div>
+                <div class="col-lg-3">
+                    <label class="form-label-custom">Category</label>
+                    <select name="category" class="form-control form-control-custom">
+                        <option value="">All Categories</option>
+                        <option th:each="cat : ${categories}" th:value="${cat}" th:text="${cat}" th:selected="${cat == selectedCategory}"></option>
+                    </select>
+                </div>
+                <div class="col-lg-3">
+                    <label class="form-label-custom">Department</label>
+                    <select name="department" class="form-control form-control-custom">
+                        <option value="">All Departments</option>
+                        <option th:each="dept : ${departments}" th:value="${dept}" th:text="${dept}" th:selected="${dept == selectedDepartment}"></option>
+                    </select>
+                </div>
+                <div class="col-lg-2">
+                    <button type="submit" class="btn btn-primary-custom w-100">
+                        <i class="bi bi-search"></i> Search
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Events Grid -->
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6" th:each="event : ${events}">
+                <div class="card-custom event-card h-100">
+                    <div style="height: 180px; display: flex; align-items: center; justify-content: center;"
+                         th:style="${event.category == 'Technology'} ? 'background: linear-gradient(135deg, #667eea, #764ba2)' :
+                                    (${event.category == 'Cultural'} ? 'background: linear-gradient(135deg, #f093fb, #f5576c)' :
+                                    (${event.category == 'Sports'} ? 'background: linear-gradient(135deg, #43e97b, #38f9d7)' :
+                                    (${event.category == 'Academic'} ? 'background: linear-gradient(135deg, #4299e1, #667eea)' :
+                                    'background: linear-gradient(135deg, #ed8936, #f6ad55)')))">
+                        <span style="font-size: 4rem;">
+                            <span th:if="${event.category == 'Technology'}">💻</span>
+                            <span th:if="${event.category == 'Cultural'}">🎭</span>
+                            <span th:if="${event.category == 'Sports'}">⚽</span>
+                            <span th:if="${event.category == 'Academic'}">📚</span>
+                            <span th:if="${event.category == 'Workshop'}">🔧</span>
+                        </span>
+                    </div>
+                    <span class="event-badge"
+                          th:classappend="${event.category == 'Technology'} ? 'badge-tech' :
+                                          (${event.category == 'Cultural'} ? 'badge-cultural' :
+                                          (${event.category == 'Sports'} ? 'badge-sports' :
+                                          (${event.category == 'Academic'} ? 'badge-academic' : 'badge-workshop')))"
+                          th:text="${event.category}">Category</span>
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="event-title" th:text="${event.title}">Event Title</h5>
+                        <p class="text-muted small flex-grow-1" th:text="${#strings.abbreviate(event.description, 120)}">Description</p>
+                        <div class="event-meta mb-2">
+                            <span><i class="bi bi-calendar3"></i> <span th:text="${event.eventDate}"></span></span>
+                            <span><i class="bi bi-clock"></i> <span th:text="${event.startTime}"></span></span>
+                        </div>
+                        <div class="event-meta mb-3">
+                            <span><i class="bi bi-geo-alt"></i> <span th:text="${event.venue}"></span></span>
+                            <span><i class="bi bi-people"></i> <span th:text="${event.availableSeats}"></span>/<span th:text="${event.totalSeats}"></span></span>
+                        </div>
+                        <a th:href="@{/student/events/{id}(id=${event.id})}" class="btn btn-primary-custom w-100">
+                            View & Register <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12" th:if="${#lists.isEmpty(events)}">
+                <div class="card-custom p-5 text-center">
+                    <div style="font-size: 4rem;">🔍</div>
+                    <h4>No events found</h4>
+                    <p class="text-muted">Try adjusting your search criteria</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: chatbot}"></div>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

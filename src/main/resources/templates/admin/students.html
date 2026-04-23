@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Students - Smart Campus')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div style="margin-top: 76px;">
+    <div class="page-header" style="background: var(--gradient-dark);">
+        <div class="container">
+            <h1>👥 Registered Students</h1>
+            <p>View all registered students on the platform</p>
+        </div>
+    </div>
+    <div class="container py-4">
+        <div class="table-custom">
+            <table class="table table-hover mb-0">
+                <thead><tr><th>#</th><th>Name</th><th>Student ID</th><th>Email</th><th>Department</th><th>Phone</th><th>Joined</th></tr></thead>
+                <tbody>
+                    <tr th:each="student, iter : ${students}">
+                        <td th:text="${iter.count}">1</td>
+                        <td th:text="${student.fullName}">Name</td>
+                        <td><code th:text="${student.studentId}">ID</code></td>
+                        <td th:text="${student.email}">Email</td>
+                        <td><span class="badge bg-primary" th:text="${student.department}">Dept</span></td>
+                        <td th:text="${student.phone}">Phone</td>
+                        <td th:text="${#temporals.format(student.createdAt, 'dd MMM yyyy')}">Date</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

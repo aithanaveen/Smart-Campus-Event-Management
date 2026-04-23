@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Login - Smart Campus')}"></head>
+
+<body>
+    <div class="auth-container">
+        <div class="container">
+            <div class="auth-card">
+                <div class="text-center mb-4">
+                    <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem; color: white;">🎓</h1>
+                    <h2>Welcome Back</h2>
+                    <p>Sign in to your Smart Campus account</p>
+                </div>
+
+                <div th:if="${errorMessage}" class="alert alert-danger"
+                    style="border-radius: 10px; background: rgba(252,92,101,0.15); color: #fc5c65; border: 1px solid rgba(252,92,101,0.3);">
+                    <i class="bi bi-exclamation-circle"></i> <span th:text="${errorMessage}"></span>
+                </div>
+                <div th:if="${successMessage}" class="alert alert-success"
+                    style="border-radius: 10px; background: rgba(72,187,120,0.15); color: #48bb78; border: 1px solid rgba(72,187,120,0.3);">
+                    <i class="bi bi-check-circle"></i> <span th:text="${successMessage}"></span>
+                </div>
+
+                <form th:action="@{/login}" method="post">
+                    <div class="mb-3">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" name="username" class="form-control" placeholder="Enter your email"
+                            required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label">Password</label>
+                        <input type="password" name="password" class="form-control" placeholder="Enter your password"
+                            required>
+                    </div>
+                    <button type="submit" class="btn btn-primary-custom w-100 py-2" style="font-size: 1.05rem;">
+                        Sign In <i class="bi bi-arrow-right"></i>
+                    </button>
+                </form>
+
+                <div class="text-center mt-4">
+                    <p style="color: var(--gray-light);">Don't have an account?
+                        <a th:href="@{/register}" style="color: var(--primary-light); font-weight: 600;">Sign Up</a>
+                    </p>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

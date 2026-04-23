@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Manage Events - Smart Campus')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div style="margin-top: 76px;">
+    <div class="page-header" style="background: var(--gradient-dark);">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div>
+                <h1>📋 Manage Events</h1>
+                <p>Create, edit, and manage campus events</p>
+            </div>
+            <a th:href="@{/admin/events/new}" class="btn btn-light" style="border-radius: 50px; font-weight: 700;">
+                <i class="bi bi-plus-lg"></i> New Event
+            </a>
+        </div>
+    </div>
+    <div class="container py-4">
+        <div th:if="${successMessage}" class="alert alert-success-custom alert-custom mb-4">
+            <i class="bi bi-check-circle"></i> <span th:text="${successMessage}"></span>
+        </div>
+        <div class="table-custom">
+            <table class="table table-hover mb-0">
+                <thead><tr><th>#</th><th>Event</th><th>Date</th><th>Venue</th><th>Category</th><th>Seats</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody>
+                    <tr th:each="event, iter : ${events}">
+                        <td th:text="${iter.count}">1</td>
+                        <td><strong th:text="${event.title}">Event</strong></td>
+                        <td th:text="${event.eventDate}">Date</td>
+                        <td th:text="${event.venue}">Venue</td>
+                        <td><span class="badge bg-primary" th:text="${event.category}"></span></td>
+                        <td><span th:text="${event.availableSeats}"></span>/<span th:text="${event.totalSeats}"></span></td>
+                        <td>
+                            <span class="badge" th:classappend="${event.status.name() == 'UPCOMING'} ? 'bg-info' : (${event.status.name() == 'COMPLETED'} ? 'bg-success' : 'bg-danger')"
+                                  th:text="${event.status}">Status</span>
+                        </td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a th:href="@{/admin/events/edit/{id}(id=${event.id})}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                                <a th:href="@{/admin/events/{id}/registrations(id=${event.id})}" class="btn btn-sm btn-outline-info"><i class="bi bi-people"></i></a>
+                                <a th:href="@{/admin/events/{id}/attendance(id=${event.id})}" class="btn btn-sm btn-outline-success"><i class="bi bi-person-check"></i></a>
+                                <a th:href="@{/admin/events/{id}/feedback(id=${event.id})}" class="btn btn-sm btn-outline-warning"><i class="bi bi-chat-dots"></i></a>
+                                <a th:href="@{/admin/events/delete/{id}(id=${event.id})}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this event?')"><i class="bi bi-trash"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

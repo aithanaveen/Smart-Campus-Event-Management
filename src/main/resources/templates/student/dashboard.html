@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Student Dashboard - Smart Campus')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div style="margin-top: 76px;">
+    <!-- Welcome Banner -->
+    <div class="page-header">
+        <div class="container">
+            <h1>Welcome back, <span th:text="${student.fullName}">Student</span>! 👋</h1>
+            <p>Here's your campus event overview</p>
+        </div>
+    </div>
+
+    <div class="container py-4">
+        <!-- Stats Cards -->
+        <div class="row g-4 mb-5">
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card">
+                    <div class="stat-icon purple"><i class="bi bi-calendar-event"></i></div>
+                    <div class="stat-value" th:text="${totalRegistrations}">0</div>
+                    <div class="stat-label">Registered Events</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card">
+                    <div class="stat-icon green"><i class="bi bi-check-circle"></i></div>
+                    <div class="stat-value" th:text="${#lists.size(registrations.?[attended])}">0</div>
+                    <div class="stat-label">Attended</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card">
+                    <div class="stat-icon orange"><i class="bi bi-award"></i></div>
+                    <div class="stat-value" th:text="${#lists.size(registrations.?[certificateGenerated])}">0</div>
+                    <div class="stat-label">Certificates</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card">
+                    <div class="stat-icon blue"><i class="bi bi-building"></i></div>
+                    <div class="stat-value" th:text="${student.department}">Dept</div>
+                    <div class="stat-label">Department</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Registrations -->
+        <div class="mb-5">
+            <h3 class="mb-4" style="font-weight: 700;">📅 My Upcoming Events</h3>
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6" th:each="reg : ${registrations}" th:if="${reg.status.name() == 'CONFIRMED'}">
+                    <div class="card-custom p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 style="font-weight: 700;" th:text="${reg.event.title}">Event</h6>
+                            <span class="badge bg-success">Confirmed</span>
+                        </div>
+                        <p class="text-muted small mb-2">
+                            <i class="bi bi-calendar3"></i> <span th:text="${reg.event.eventDate}"></span> |
+                            <i class="bi bi-geo-alt"></i> <span th:text="${reg.event.venue}"></span>
+                        </p>
+                        <p class="mb-2"><strong>Seat:</strong> <span th:text="${reg.seatNumber}"></span></p>
+                        <p class="small text-muted mb-3"><strong>Code:</strong> <span th:text="${reg.registrationCode}"></span></p>
+                        <div class="d-flex gap-2">
+                            <a th:href="@{/student/registration/{id}/qr(id=${reg.id})}" class="btn btn-sm btn-outline-custom">
+                                <i class="bi bi-qr-code"></i> QR Pass
+                            </a>
+                            <a th:if="${reg.attended && !reg.certificateGenerated}" th:href="@{/student/certificate/{id}(id=${reg.event.id})}" class="btn btn-sm btn-success-custom">
+                                <i class="bi bi-download"></i> Certificate
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12" th:if="${#lists.isEmpty(registrations)}">
+                    <div class="card-custom p-5 text-center">
+                        <div style="font-size: 3rem;">🎫</div>
+                        <h5>No registrations yet</h5>
+                        <p class="text-muted">Browse events and register for your first event!</p>
+                        <a th:href="@{/student/events}" class="btn btn-primary-custom">Browse Events</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommended Events -->
+        <div th:if="${recommended != null && !#lists.isEmpty(recommended)}">
+            <h3 class="mb-4" style="font-weight: 700;">🎯 Recommended For You</h3>
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6" th:each="event : ${recommended}">
+                    <div class="card-custom event-card">
+                        <div style="height: 150px; background: var(--gradient-primary); display: flex; align-items: center; justify-content: center;">
+                            <span style="font-size: 3rem;">
+                                <span th:if="${event.category == 'Technology'}">💻</span>
+                                <span th:if="${event.category == 'Cultural'}">🎭</span>
+                                <span th:if="${event.category == 'Sports'}">⚽</span>
+                                <span th:if="${event.category == 'Academic'}">📚</span>
+                                <span th:if="${event.category == 'Workshop'}">🔧</span>
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="event-title" th:text="${event.title}">Event</h6>
+                            <div class="event-meta">
+                                <span><i class="bi bi-calendar3"></i> <span th:text="${event.eventDate}"></span></span>
+                                <span><i class="bi bi-people"></i> <span th:text="${event.availableSeats}"></span> left</span>
+                            </div>
+                            <a th:href="@{/student/events/{id}(id=${event.id})}" class="btn btn-primary-custom btn-sm w-100">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: chatbot}"></div>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

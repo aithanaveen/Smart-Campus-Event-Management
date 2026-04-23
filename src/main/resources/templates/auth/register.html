@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Register - Smart Campus')}"></head>
+<body>
+<div class="auth-container">
+    <div class="container">
+        <div class="auth-card" style="max-width: 550px;">
+            <div class="text-center mb-4">
+                <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem; color: white;">🎓</h1>
+                <h2>Create Account</h2>
+                <p>Join Smart Campus and explore events</p>
+            </div>
+
+            <div th:if="${errorMessage}" class="alert alert-danger" style="border-radius: 10px; background: rgba(252,92,101,0.15); color: #fc5c65; border: 1px solid rgba(252,92,101,0.3);">
+                <span th:text="${errorMessage}"></span>
+            </div>
+
+            <form th:action="@{/register}" th:object="${student}" method="post">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" th:field="*{fullName}" class="form-control" placeholder="John Doe" required>
+                        <small th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}" class="text-danger"></small>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Student ID</label>
+                        <input type="text" th:field="*{studentId}" class="form-control" placeholder="STU001" required>
+                        <small th:if="${#fields.hasErrors('studentId')}" th:errors="*{studentId}" class="text-danger"></small>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" th:field="*{email}" class="form-control" placeholder="john@university.edu" required>
+                    <small th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="text-danger"></small>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" th:field="*{password}" class="form-control" placeholder="Min 6 characters" required>
+                    <small th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="text-danger"></small>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Department</label>
+                        <select th:field="*{department}" class="form-control" required>
+                            <option value="">Select Department</option>
+                            <option value="Computer Science">Computer Science</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Mechanical">Mechanical</option>
+                            <option value="Civil">Civil</option>
+                            <option value="Physics">Physics</option>
+                            <option value="Mathematics">Mathematics</option>
+                            <option value="Business">Business</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Phone</label>
+                        <input type="text" th:field="*{phone}" class="form-control" placeholder="9876543210">
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label">Interests</label>
+                    <input type="text" th:field="*{interests}" class="form-control" placeholder="Technology, Sports, Music">
+                    <small style="color: var(--gray-light);">Comma-separated for better event recommendations</small>
+                </div>
+                <button type="submit" class="btn btn-primary-custom w-100 py-2" style="font-size: 1.05rem;">
+                    Create Account <i class="bi bi-arrow-right"></i>
+                </button>
+            </form>
+
+            <div class="text-center mt-4">
+                <p style="color: var(--gray-light);">Already have an account?
+                    <a th:href="@{/login}" style="color: var(--primary-light); font-weight: 600;">Sign In</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
