@@ -42,8 +42,28 @@ public class AttendanceService {
         return attendanceRepository.save(attendance);
     }
 
+    @Transactional
+    public void revokeAttendance(Long attendanceId) {
+        Attendance attendance = attendanceRepository.findById(attendanceId)
+                .orElseThrow(() -> new RuntimeException("Attendance record not found"));
+
+        Registration reg = attendance.getRegistration();
+        if (reg != null) {
+            reg.setAttended(false);
+            reg.setAttendedAt(null);
+            registrationRepository.save(reg);
+        }
+
+        attendanceRepository.delete(attendance);
+    }
+
     public List<Attendance> findByEventId(Long eventId) {
         return attendanceRepository.findByEventId(eventId);
+    }
+
+    public Attendance findById(Long attendanceId) {
+        return attendanceRepository.findById(attendanceId)
+                .orElseThrow(() -> new RuntimeException("Attendance record not found"));
     }
 
     public long countByEventId(Long eventId) {

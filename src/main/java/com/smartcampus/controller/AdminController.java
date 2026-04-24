@@ -133,6 +133,17 @@ public class AdminController {
         return "admin/attendance";
     }
 
+    @GetMapping("/attendance/{id}/revoke")
+    public String revokeAttendance(@PathVariable Long id, @RequestParam("eventId") Long eventId, RedirectAttributes redirectAttributes) {
+        try {
+            attendanceService.revokeAttendance(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Attendance revoked successfully.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/admin/events/" + eventId + "/attendance";
+    }
+
     @PostMapping("/attendance/scan")
     public String scanQR(@RequestParam String registrationCode, RedirectAttributes redirectAttributes) {
         try {
