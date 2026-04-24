@@ -75,6 +75,7 @@
                                 <tr style="font-size: 0.85rem; color: var(--gray);">
                                     <th>Event</th>
                                     <th>Date</th>
+                                    <th>Registered</th>
                                     <th>Seats</th>
                                     <th>Status</th>
                                     <th>Actions</th>
@@ -87,6 +88,7 @@
                                         <br><small class="text-muted" th:text="${event.category}"></small>
                                     </td>
                                     <td th:text="${event.eventDate}">Date</td>
+                                    <td><strong class="text-success" th:text="${event.totalSeats - event.availableSeats}">0</strong></td>
                                     <td><span th:text="${event.availableSeats}"></span>/<span th:text="${event.totalSeats}"></span></td>
                                     <td>
                                         <span class="badge" th:classappend="${event.status.name() == 'UPCOMING'} ? 'bg-primary' : (${event.status.name() == 'COMPLETED'} ? 'bg-success' : 'bg-danger')"

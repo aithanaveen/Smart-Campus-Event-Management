@@ -21,7 +21,7 @@
         </div>
         <div class="table-custom">
             <table class="table table-hover mb-0">
-                <thead><tr><th>#</th><th>Event</th><th>Date</th><th>Venue</th><th>Category</th><th>Seats</th><th>Status</th><th>Actions</th></tr></thead>
+                <thead><tr><th>#</th><th>Event</th><th>Date</th><th>Venue</th><th>Category</th><th>Registered</th><th>Seats</th><th>Status</th><th>Actions</th></tr></thead>
                 <tbody>
                     <tr th:each="event, iter : ${events}">
                         <td th:text="${iter.count}">1</td>
@@ -29,6 +29,7 @@
                         <td th:text="${event.eventDate}">Date</td>
                         <td th:text="${event.venue}">Venue</td>
                         <td><span class="badge bg-primary" th:text="${event.category}"></span></td>
+                        <td><strong class="text-success" th:text="${event.totalSeats - event.availableSeats}">0</strong></td>
                         <td><span th:text="${event.availableSeats}"></span>/<span th:text="${event.totalSeats}"></span></td>
                         <td>
                             <span class="badge" th:classappend="${event.status.name() == 'UPCOMING'} ? 'bg-info' : (${event.status.name() == 'COMPLETED'} ? 'bg-success' : 'bg-danger')"

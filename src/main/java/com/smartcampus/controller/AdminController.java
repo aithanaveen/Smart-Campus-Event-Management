@@ -91,8 +91,18 @@ public class AdminController {
     public String viewRegistrations(@PathVariable Long id, Model model) {
         Event event = eventService.findById(id).orElseThrow();
         List<Registration> registrations = registrationService.findByEventId(id);
+
+        long confirmedCount = registrations.stream()
+                .filter(r -> r.getStatus() == Registration.RegistrationStatus.CONFIRMED)
+                .count();
+        long attendedCount = registrations.stream()
+                .filter(Registration::isAttended)
+                .count();
+
         model.addAttribute("event", event);
         model.addAttribute("registrations", registrations);
+        model.addAttribute("confirmedCount", confirmedCount);
+        model.addAttribute("attendedCount", attendedCount);
         return "admin/registrations";
     }
 

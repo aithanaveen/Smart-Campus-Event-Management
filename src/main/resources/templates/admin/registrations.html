@@ -4,44 +4,190 @@
 <body>
 <nav th:replace="~{fragments/layout :: navbar}"></nav>
 <div style="margin-top: 76px;">
-    <div class="page-header" style="background: var(--gradient-dark);">
+    <div class="page-header" style="background: var(--gradient-primary);">
         <div class="container">
-            <h1>👥 Event Registrations</h1>
+            <h1><i class="bi bi-people-fill"></i> Event Registrations</h1>
             <p th:text="${event.title}">Event Name</p>
         </div>
     </div>
+
     <div class="container py-4">
+        <!-- Summary Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card">
+                    <div class="stat-icon purple"><i class="bi bi-people-fill"></i></div>
+                    <div class="stat-value" th:text="${#lists.size(registrations)}">0</div>
+                    <div class="stat-label">Total Registered</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card">
+                    <div class="stat-icon green"><i class="bi bi-check-circle-fill"></i></div>
+                    <div class="stat-value" th:text="${confirmedCount}">0</div>
+                    <div class="stat-label">Confirmed</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card">
+                    <div class="stat-icon blue"><i class="bi bi-person-check-fill"></i></div>
+                    <div class="stat-value" th:text="${attendedCount}">0</div>
+                    <div class="stat-label">Attended</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card">
+                    <div class="stat-icon orange"><i class="bi bi-grid-3x3"></i></div>
+                    <div class="stat-value">
+                        <span th:text="${event.availableSeats}">0</span>/<span th:text="${event.totalSeats}">0</span>
+                    </div>
+                    <div class="stat-label">Seats Available</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search & Filter -->
         <div class="card-custom p-3 mb-4">
-            <strong>Total Registrations:</strong> <span th:text="${#lists.size(registrations)}"></span> |
-            <strong>Total Seats:</strong> <span th:text="${event.totalSeats}"></span> |
-            <strong>Available:</strong> <span th:text="${event.availableSeats}"></span>
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text" style="background: transparent; border-right: 0; border-radius: 10px 0 0 10px;"><i class="bi bi-search"></i></span>
+                        <input type="text" id="searchInput" class="form-control form-control-custom" placeholder="Search by name, email, seat, or code..." onkeyup="filterTable()" style="border-left: 0; border-radius: 0 10px 10px 0;">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select id="statusFilter" class="form-select form-control-custom" onchange="filterTable()">
+                        <option value="">All Statuses</option>
+                        <option value="CONFIRMED">Confirmed</option>
+                        <option value="CANCELLED">Cancelled</option>
+                        <option value="WAITLISTED">Waitlisted</option>
+                    </select>
+                </div>
+                <div class="col-md-3 text-end">
+                    <span class="text-muted" id="resultCount"></span>
+                </div>
+            </div>
         </div>
-        <div class="table-custom">
-            <table class="table table-hover mb-0">
-                <thead><tr><th>#</th><th>Student</th><th>Email</th><th>Seat</th><th>Code</th><th>Status</th><th>Attended</th><th>Registered At</th></tr></thead>
-                <tbody>
-                    <tr th:each="reg, iter : ${registrations}">
-                        <td th:text="${iter.count}">1</td>
-                        <td th:text="${reg.student.fullName}">Name</td>
-                        <td th:text="${reg.student.email}">Email</td>
-                        <td><span class="badge bg-primary" th:text="${reg.seatNumber}">Seat</span></td>
-                        <td><code th:text="${reg.registrationCode}">Code</code></td>
-                        <td><span class="badge bg-success" th:text="${reg.status}">Status</span></td>
-                        <td>
-                            <span th:if="${reg.attended}" class="text-success"><i class="bi bi-check-circle-fill"></i> Yes</span>
-                            <span th:if="${!reg.attended}" class="text-muted">No</span>
-                        </td>
-                        <td th:text="${#temporals.format(reg.registeredAt, 'dd MMM yyyy HH:mm')}">Date</td>
-                    </tr>
-                </tbody>
-            </table>
+
+        <!-- Registrations Table -->
+        <div class="card-custom" style="overflow: hidden;">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="registrationsTable">
+                    <thead style="background: var(--light);">
+                        <tr style="font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--gray);">
+                            <th style="padding: 14px 16px;">#</th>
+                            <th style="padding: 14px 16px;">Student</th>
+                            <th style="padding: 14px 16px;">Student ID</th>
+                            <th style="padding: 14px 16px;">Department</th>
+                            <th style="padding: 14px 16px;">Seat</th>
+                            <th style="padding: 14px 16px;">Reg. Code</th>
+                            <th style="padding: 14px 16px;">Status</th>
+                            <th style="padding: 14px 16px;">Attended</th>
+                            <th style="padding: 14px 16px;">Registered At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="reg, iter : ${registrations}" class="reg-row"
+                            th:data-status="${reg.status}">
+                            <td style="padding: 12px 16px; font-weight: 600; color: var(--gray);" th:text="${iter.count}">1</td>
+                            <td style="padding: 12px 16px;">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--gradient-primary); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.8rem;"
+                                         th:text="${#strings.substring(reg.student.fullName, 0, 1)}">A</div>
+                                    <div>
+                                        <div style="font-weight: 600;" th:text="${reg.student.fullName}">Name</div>
+                                        <small class="text-muted" th:text="${reg.student.email}">email</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="padding: 12px 16px;">
+                                <code style="background: var(--light); padding: 3px 8px; border-radius: 6px; font-size: 0.85rem;" th:text="${reg.student.studentId}">ID</code>
+                            </td>
+                            <td style="padding: 12px 16px;" th:text="${reg.student.department}">Dept</td>
+                            <td style="padding: 12px 16px;">
+                                <span class="badge" style="background: var(--gradient-primary); font-size: 0.85rem; padding: 5px 10px;" th:text="${reg.seatNumber}">Seat</span>
+                            </td>
+                            <td style="padding: 12px 16px;">
+                                <code style="background: var(--light); padding: 3px 8px; border-radius: 6px; font-size: 0.82rem; letter-spacing: 0.5px;" th:text="${reg.registrationCode}">Code</code>
+                            </td>
+                            <td style="padding: 12px 16px;">
+                                <span class="badge"
+                                      th:classappend="${reg.status.name() == 'CONFIRMED'} ? 'bg-success' : (${reg.status.name() == 'CANCELLED'} ? 'bg-danger' : 'bg-warning')"
+                                      th:text="${reg.status}">Status</span>
+                            </td>
+                            <td style="padding: 12px 16px;">
+                                <span th:if="${reg.attended}" style="color: var(--success); font-weight: 600;">
+                                    <i class="bi bi-check-circle-fill"></i> Yes
+                                </span>
+                                <span th:if="${!reg.attended}" class="text-muted">
+                                    <i class="bi bi-dash-circle"></i> No
+                                </span>
+                            </td>
+                            <td style="padding: 12px 16px; font-size: 0.85rem; color: var(--gray);"
+                                th:text="${reg.registeredAt != null ? #temporals.format(reg.registeredAt, 'dd MMM yyyy, hh:mm a') : '-'}">Date</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Empty State -->
+            <div th:if="${#lists.isEmpty(registrations)}" class="text-center py-5">
+                <i class="bi bi-inbox" style="font-size: 3rem; color: var(--gray-light);"></i>
+                <p class="text-muted mt-2">No registrations yet for this event.</p>
+            </div>
         </div>
-        <div class="mt-3">
-            <a th:href="@{/admin/events}" class="btn btn-outline-custom"><i class="bi bi-arrow-left"></i> Back to Events</a>
+
+        <!-- Actions -->
+        <div class="d-flex justify-content-between mt-4">
+            <a th:href="@{/admin/events}" class="btn btn-outline-custom">
+                <i class="bi bi-arrow-left"></i> Back to Events
+            </a>
+            <div class="d-flex gap-2">
+                <a th:href="@{/admin/events/{id}/attendance(id=${event.id})}" class="btn btn-success-custom">
+                    <i class="bi bi-person-check"></i> View Attendance
+                </a>
+                <a th:href="@{/admin/events/{id}/feedback(id=${event.id})}" class="btn btn-primary-custom">
+                    <i class="bi bi-chat-dots"></i> View Feedback
+                </a>
+            </div>
         </div>
     </div>
 </div>
+
 <footer th:replace="~{fragments/layout :: footer}"></footer>
 <div th:replace="~{fragments/layout :: scripts}"></div>
+
+<script>
+function filterTable() {
+    const searchVal = document.getElementById('searchInput').value.toLowerCase();
+    const statusVal = document.getElementById('statusFilter').value;
+    const rows = document.querySelectorAll('.reg-row');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        const status = row.dataset.status;
+        const matchSearch = !searchVal || text.includes(searchVal);
+        const matchStatus = !statusVal || status === statusVal;
+
+        if (matchSearch && matchStatus) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    document.getElementById('resultCount').textContent =
+        visibleCount + ' of ' + rows.length + ' registrations';
+}
+
+// Initialize count on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const rows = document.querySelectorAll('.reg-row');
+    document.getElementById('resultCount').textContent =
+        rows.length + ' registrations';
+});
+</script>
 </body>
 </html>
