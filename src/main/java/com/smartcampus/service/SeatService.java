@@ -67,6 +67,21 @@ public class SeatService {
         return dto;
     }
 
+    @Transactional
+    public SeatDTO releaseSeat(Long eventId, String seatLabel) {
+        Seat seat = seatRepository.findByEventIdAndSeatLabel(eventId, seatLabel)
+                .orElseThrow(() -> new RuntimeException("Seat not found"));
+
+        seat.setStatus(Seat.SeatStatus.AVAILABLE);
+        seat.setBookedBy(null);
+        Seat savedSeat = seatRepository.save(seat);
+
+        SeatDTO dto = convertToDTO(savedSeat);
+        messagingTemplate.convertAndSend("/topic/seats/" + eventId, dto);
+
+        return dto;
+    }
+
     public long getAvailableSeatsCount(Long eventId) {
         return seatRepository.countByEventIdAndStatus(eventId, Seat.SeatStatus.AVAILABLE);
     }

@@ -103,6 +103,10 @@ public class RegistrationService {
         Registration reg = registrationRepository.findById(registrationId)
                 .orElseThrow(() -> new RuntimeException("Registration not found"));
 
+        if (reg.getStatus() == Registration.RegistrationStatus.CANCELLED) {
+            return;
+        }
+
         reg.setStatus(Registration.RegistrationStatus.CANCELLED);
         registrationRepository.save(reg);
 
@@ -110,6 +114,29 @@ public class RegistrationService {
         Event event = reg.getEvent();
         event.setAvailableSeats(event.getAvailableSeats() + 1);
         eventRepository.save(event);
+
+        if (reg.getSeatNumber() != null && !reg.getSeatNumber().isEmpty()) {
+            seatService.releaseSeat(event.getId(), reg.getSeatNumber());
+        }
+    }
+
+    @Transactional
+    public void deleteRegistration(Long registrationId) {
+        Registration reg = registrationRepository.findById(registrationId)
+                .orElseThrow(() -> new RuntimeException("Registration not found"));
+
+        if (reg.getStatus() != Registration.RegistrationStatus.CANCELLED) {
+            // Free up the seat if it wasn't already cancelled
+            Event event = reg.getEvent();
+            event.setAvailableSeats(event.getAvailableSeats() + 1);
+            eventRepository.save(event);
+
+            if (reg.getSeatNumber() != null && !reg.getSeatNumber().isEmpty()) {
+                seatService.releaseSeat(event.getId(), reg.getSeatNumber());
+            }
+        }
+
+        registrationRepository.delete(reg);
     }
 
     public List<Registration> findConfirmedByStudent(Long studentId) {

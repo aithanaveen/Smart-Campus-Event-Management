@@ -106,6 +106,24 @@ public class AdminController {
         return "admin/registrations";
     }
 
+    @GetMapping("/registrations/{id}/cancel")
+    public String cancelRegistration(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        Registration reg = registrationService.findById(id).orElseThrow();
+        Long eventId = reg.getEvent().getId();
+        registrationService.cancelRegistration(id);
+        redirectAttributes.addFlashAttribute("successMessage", "Registration cancelled successfully.");
+        return "redirect:/admin/events/" + eventId + "/registrations";
+    }
+
+    @GetMapping("/registrations/{id}/delete")
+    public String deleteRegistration(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        Registration reg = registrationService.findById(id).orElseThrow();
+        Long eventId = reg.getEvent().getId();
+        registrationService.deleteRegistration(id);
+        redirectAttributes.addFlashAttribute("successMessage", "Registration deleted successfully.");
+        return "redirect:/admin/events/" + eventId + "/registrations";
+    }
+
     @GetMapping("/events/{id}/attendance")
     public String viewAttendance(@PathVariable Long id, Model model) {
         Event event = eventService.findById(id).orElseThrow();

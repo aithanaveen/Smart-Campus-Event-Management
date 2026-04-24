@@ -12,6 +12,14 @@
     </div>
 
     <div class="container py-4">
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill"></i> <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
         <!-- Summary Cards -->
         <div class="row g-4 mb-4">
             <div class="col-lg-3 col-md-6">
@@ -84,6 +92,7 @@
                             <th style="padding: 14px 16px;">Status</th>
                             <th style="padding: 14px 16px;">Attended</th>
                             <th style="padding: 14px 16px;">Registered At</th>
+                            <th style="padding: 14px 16px;">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -125,6 +134,20 @@
                             </td>
                             <td style="padding: 12px 16px; font-size: 0.85rem; color: var(--gray);"
                                 th:text="${reg.registeredAt != null ? #temporals.format(reg.registeredAt, 'dd MMM yyyy, hh:mm a') : '-'}">Date</td>
+                            <td style="padding: 12px 16px;">
+                                <div class="d-flex gap-1">
+                                    <a th:if="${reg.status.name() != 'CANCELLED'}" th:href="@{/admin/registrations/{id}/cancel(id=${reg.id})}"
+                                       class="btn btn-sm btn-outline-warning" title="Cancel Registration"
+                                       onclick="return confirm('Are you sure you want to cancel this registration? The seat will be released.')">
+                                        <i class="bi bi-x-circle"></i>
+                                    </a>
+                                    <a th:href="@{/admin/registrations/{id}/delete(id=${reg.id})}"
+                                       class="btn btn-sm btn-outline-danger" title="Delete Registration"
+                                       onclick="return confirm('Are you sure you want to completely delete this registration? This cannot be undone.')">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
