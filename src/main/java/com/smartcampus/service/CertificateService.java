@@ -14,7 +14,7 @@ import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.LineSeparator;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.kernel.pdf.canvas.draw.SolidLine;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -28,13 +28,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class CertificateService {
 
-    @Autowired
-    private CertificateRepository certificateRepository;
-
-    @Autowired
-    private RegistrationRepository registrationRepository;
+    private final CertificateRepository certificateRepository;
+    private final RegistrationRepository registrationRepository;
 
     @Value("${app.certificate.path:./certificates/}")
     private String certificatePath;

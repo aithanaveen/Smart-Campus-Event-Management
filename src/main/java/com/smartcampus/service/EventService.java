@@ -5,7 +5,7 @@ import com.smartcampus.entity.Event.EventStatus;
 import com.smartcampus.entity.Seat;
 import com.smartcampus.repository.EventRepository;
 import com.smartcampus.repository.SeatRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,13 +15,11 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class EventService {
 
-    @Autowired
-    private EventRepository eventRepository;
-
-    @Autowired
-    private SeatRepository seatRepository;
+    private final EventRepository eventRepository;
+    private final SeatRepository seatRepository;
 
     public List<Event> findAll() {
         return eventRepository.findAll();

@@ -2,7 +2,7 @@ package com.smartcampus.service;
 
 import com.smartcampus.entity.*;
 import com.smartcampus.repository.*;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,22 +11,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class RegistrationService {
-
-    @Autowired
-    private RegistrationRepository registrationRepository;
-
-    @Autowired
-    private EventRepository eventRepository;
-
-    @Autowired
-    private SeatService seatService;
-
-    @Autowired
-    private QRCodeService qrCodeService;
-
-    @Autowired
-    private EmailService emailService;
+    private final RegistrationRepository registrationRepository;
+    private final EventRepository eventRepository;
+    private final SeatService seatService;
+    private final QRCodeService qrCodeService;
+    private final EmailService emailService;
 
     @Transactional
     public Registration registerForEvent(Student student, Long eventId, String seatLabel) {

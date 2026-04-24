@@ -2,7 +2,7 @@ package com.smartcampus.service;
 
 import com.smartcampus.entity.Student;
 import com.smartcampus.repository.StudentRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -10,13 +10,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class StudentService {
-
-    @Autowired
-    private StudentRepository studentRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final StudentRepository studentRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public Student registerStudent(Student student) {
         if (studentRepository.existsByEmail(student.getEmail())) {
