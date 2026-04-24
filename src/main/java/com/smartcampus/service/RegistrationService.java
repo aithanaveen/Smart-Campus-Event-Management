@@ -16,6 +16,7 @@ public class RegistrationService {
     private final RegistrationRepository registrationRepository;
     private final EventRepository eventRepository;
     private final SeatService seatService;
+    private final AttendanceRepository attendanceRepository;
     private final QRCodeService qrCodeService;
     private final EmailService emailService;
 
@@ -135,6 +136,10 @@ public class RegistrationService {
                 seatService.releaseSeat(event.getId(), reg.getSeatNumber());
             }
         }
+
+        // Delete any associated attendance record to prevent foreign key constraint violations
+        attendanceRepository.findByRegistrationId(registrationId)
+                .ifPresent(attendanceRepository::delete);
 
         registrationRepository.delete(reg);
     }
