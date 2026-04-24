@@ -95,6 +95,10 @@ public class RegistrationService {
         return registrationRepository.findByRegistrationCode(code);
     }
 
+    public Optional<Registration> findById(Long id) {
+        return registrationRepository.findById(id);
+    }
+
     public long countByEventId(Long eventId) {
         return registrationRepository.countByEventId(eventId);
     }

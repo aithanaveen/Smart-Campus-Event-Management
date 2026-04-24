@@ -45,9 +45,11 @@ public class Student {
     private String profileImage;
 
     @Column(nullable = false)
+    @Builder.Default
     private boolean enabled = true;
 
     @Column(nullable = false)
+    @Builder.Default
     private String role = "ROLE_STUDENT";
 
     private LocalDateTime createdAt;

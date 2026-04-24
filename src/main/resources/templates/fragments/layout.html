@@ -3,7 +3,7 @@
 <!-- Navbar Fragment -->
 <nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-custom fixed-top">
     <div class="container">
-        <a class="navbar-brand" th:href="@{/}">🎓 SmartCampus</a>
+        <a class="navbar-brand" th:href="@{/}"><i class="bi bi-mortarboard"></i> SmartCampus</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 style="border-color: rgba(255,255,255,0.3);">
             <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
@@ -60,7 +60,7 @@
     <div class="container">
         <div class="row">
             <div class="col-lg-4 mb-4">
-                <h5>🎓 SmartCampus</h5>
+                <h5><i class="bi bi-mortarboard"></i> SmartCampus</h5>
                 <p>AI-Powered Smart Campus Event Management System with Real-Time Seat Booking.</p>
             </div>
             <div class="col-lg-4 mb-4">
@@ -86,11 +86,11 @@
 <!-- Chatbot Fragment -->
 <div th:fragment="chatbot">
     <button class="chatbot-toggle" onclick="toggleChatbot()" title="AI Assistant">
-        💬
+        <i class="bi bi-chat-dots"></i>
     </button>
     <div class="chatbot-window" id="chatbotWindow">
         <div class="chatbot-header">
-            <span style="font-size: 1.5rem;">🤖</span>
+            <i class="bi bi-robot" style="font-size: 1.5rem;"></i>
             <div>
                 <h6>Campus Assistant</h6>
                 <small style="opacity: 0.8;">Ask me anything about events</small>
@@ -98,12 +98,12 @@
         </div>
         <div class="chatbot-messages" id="chatMessages">
             <div class="chat-message bot">
-                👋 Hello! I'm your Smart Campus Assistant. I can help you with event info, seat availability, venues, and more. Type <strong>help</strong> to see all options!
+                <i class="bi bi-robot"></i> Hello! I'm your Smart Campus Assistant. I can help you with event info, seat availability, venues, and more. Type <strong>help</strong> to see all options!
             </div>
         </div>
         <div class="chatbot-input">
             <input type="text" id="chatInput" placeholder="Type your message..." autocomplete="off">
-            <button onclick="sendChatMessage()">➤</button>
+            <button onclick="sendChatMessage()"><i class="bi bi-send"></i></button>
         </div>
     </div>
 </div>

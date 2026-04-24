@@ -30,6 +30,7 @@ public class Admin {
     private String password;
 
     @Column(nullable = false)
+    @Builder.Default
     private String role = "ROLE_ADMIN";
 
     private String department;

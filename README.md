@@ -59,7 +59,7 @@ A comprehensive full-stack event management system built with Spring Boot, featu
 ### Prerequisites
 - Java 17+ (JDK)
 - Maven 3.8+
-- MySQL 8.0+
+- MySQL 8.0+ (optional if you use `demo` profile)
 - Git
 
 ### Step 1: Clone / Navigate to Project
@@ -74,16 +74,16 @@ CREATE DATABASE smart_campus_db;
 Or the app will auto-create it (`createDatabaseIfNotExist=true`).
 
 ### Step 3: Configure Application Properties
-Edit `src/main/resources/application.properties`:
+Set environment variables (recommended) used by `src/main/resources/application.properties`:
 
 ```properties
 # MySQL credentials
-spring.datasource.username=root
-spring.datasource.password=YOUR_PASSWORD
+DB_USERNAME=root
+DB_PASSWORD=your-db-password
 
 # Gmail SMTP (for OTP & notifications)
-spring.mail.username=your-email@gmail.com
-spring.mail.password=your-app-password
+MAIL_USERNAME=your-email@gmail.com
+MAIL_PASSWORD=your-app-password
 
 # API Keys (optional)
 openai.api.key=your-openai-key
@@ -97,6 +97,12 @@ google.maps.api.key=your-google-maps-key
 mvn clean install
 mvn spring-boot:run
 ```
+
+### Quick Demo Mode (No MySQL setup required)
+```bash
+mvn spring-boot:run -Dspring-boot.run.profiles=demo
+```
+This uses an in-memory H2 database. Realtime OTP delivery still requires `MAIL_USERNAME` and `MAIL_PASSWORD`; OTPs are not shown in API responses.
 
 ### Step 5: Access Application
 - **Home:** http://localhost:8080

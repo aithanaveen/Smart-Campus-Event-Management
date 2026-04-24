@@ -19,11 +19,16 @@ import java.util.Map;
 @RequestMapping("/admin")
 public class AdminController {
 
-    @Autowired private EventService eventService;
-    @Autowired private StudentService studentService;
-    @Autowired private RegistrationService registrationService;
-    @Autowired private AttendanceService attendanceService;
-    @Autowired private FeedbackService feedbackService;
+    @Autowired
+    private EventService eventService;
+    @Autowired
+    private StudentService studentService;
+    @Autowired
+    private RegistrationService registrationService;
+    @Autowired
+    private AttendanceService attendanceService;
+    @Autowired
+    private FeedbackService feedbackService;
 
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
@@ -54,7 +59,7 @@ public class AdminController {
 
     @PostMapping("/events/save")
     public String saveEvent(@Valid @ModelAttribute("event") Event event,
-                            BindingResult result, RedirectAttributes redirectAttributes) {
+            BindingResult result, RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
             return "admin/event-form";
         }

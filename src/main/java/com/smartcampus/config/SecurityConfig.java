@@ -4,6 +4,7 @@ import com.smartcampus.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -38,7 +39,10 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/home", "/register", "/login", "/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
                 .requestMatchers("/api/chatbot/**", "/api/otp/**").permitAll()
-                .requestMatchers("/api/seats/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/seats/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/seats/book").hasRole("STUDENT")
+                .requestMatchers(HttpMethod.POST, "/api/register-event").hasRole("STUDENT")
+                .requestMatchers(HttpMethod.PUT, "/api/seats/update").hasRole("ADMIN")
                 .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/student/**").hasRole("STUDENT")

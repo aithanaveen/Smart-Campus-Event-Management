@@ -120,7 +120,9 @@ function selectSeat(seatDiv, seat) {
     if (seatInput) seatInput.value = seat.seatLabel;
 
     const bookBtn = document.getElementById('bookSeatBtn');
-    if (bookBtn) bookBtn.disabled = false;
+    const otpFlag = document.getElementById('otpVerified');
+    const isOtpVerified = otpFlag && otpFlag.value === 'true';
+    if (bookBtn && isOtpVerified) bookBtn.disabled = false;
 }
 
 function updateSeatUI(seatUpdate) {

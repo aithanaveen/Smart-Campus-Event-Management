@@ -31,10 +31,13 @@ public class Registration {
     private String registrationCode;
 
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private RegistrationStatus status = RegistrationStatus.CONFIRMED;
 
+    @Builder.Default
     private boolean attended = false;
 
+    @Builder.Default
     private boolean certificateGenerated = false;
 
     private String certificatePath;

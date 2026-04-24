@@ -1,78 +1,122 @@
 package com.smartcampus.service;
 
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
+import java.security.SecureRandom;
+import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.Random;
 
 @Service
 public class EmailService {
 
+    private static final long OTP_VALIDITY_SECONDS = 10 * 60;
+
     @Autowired
     private JavaMailSender mailSender;
 
-    private final Map<String, String> otpStorage = new ConcurrentHashMap<>();
-    private final Random random = new Random();
+    @Value("${spring.mail.username:}")
+    private String mailUsername;
 
-    public String generateOTP(String email) {
-        String otp = String.format("%06d", random.nextInt(999999));
-        otpStorage.put(email, otp);
+    @Value("${spring.mail.password:}")
+    private String mailPassword;
 
-        // Send OTP email
-        try {
-            sendOTPEmail(email, otp);
-        } catch (Exception e) {
-            System.err.println("Failed to send OTP email: " + e.getMessage());
+    private final Map<String, OtpEntry> otpStorage = new ConcurrentHashMap<>();
+    private final Map<String, Instant> verifiedEmails = new ConcurrentHashMap<>();
+    private final SecureRandom random = new SecureRandom();
+
+    public OtpDispatchResult generateOTP(String email) {
+        if (!isMailConfigured()) {
+            return new OtpDispatchResult(false, "Mail server is not configured.");
         }
 
-        return otp;
+        String normalizedEmail = normalizeEmail(email);
+        String otp = String.format("%06d", random.nextInt(1_000_000));
+        otpStorage.put(normalizedEmail, new OtpEntry(otp, Instant.now().plusSeconds(OTP_VALIDITY_SECONDS)));
+        verifiedEmails.remove(normalizedEmail);
+
+        boolean sent = sendOTPEmail(email, otp);
+        if (sent) {
+            return new OtpDispatchResult(true, "OTP sent successfully");
+        }
+
+        otpStorage.remove(normalizedEmail);
+        return new OtpDispatchResult(false, "Failed to deliver OTP email");
     }
 
     public boolean verifyOTP(String email, String otp) {
-        String storedOTP = otpStorage.get(email);
-        if (storedOTP != null && storedOTP.equals(otp)) {
-            otpStorage.remove(email);
+        String normalizedEmail = normalizeEmail(email);
+        OtpEntry storedOTP = otpStorage.get(normalizedEmail);
+        if (storedOTP == null || storedOTP.expiresAt().isBefore(Instant.now())) {
+            otpStorage.remove(normalizedEmail);
+            return false;
+        }
+
+        if (storedOTP.code().equals(otp)) {
+            otpStorage.remove(normalizedEmail);
+            verifiedEmails.put(normalizedEmail, Instant.now().plusSeconds(OTP_VALIDITY_SECONDS));
             return true;
         }
+
         return false;
     }
 
-    @Async
-    public void sendOTPEmail(String to, String otp) {
+    public boolean hasOtpVerification(String email) {
+        String normalizedEmail = normalizeEmail(email);
+        Instant verifiedUntil = verifiedEmails.get(normalizedEmail);
+        if (verifiedUntil == null || verifiedUntil.isBefore(Instant.now())) {
+            verifiedEmails.remove(normalizedEmail);
+            return false;
+        }
+
+        return true;
+    }
+
+    public void consumeOtpVerification(String email) {
+        String normalizedEmail = normalizeEmail(email);
+        verifiedEmails.remove(normalizedEmail);
+    }
+
+    public boolean sendOTPEmail(String to, String otp) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
             helper.setTo(to);
-            helper.setSubject("🔐 Smart Campus - OTP Verification");
+            helper.setFrom(mailUsername);
+            helper.setSubject("Smart Campus - OTP Verification");
             helper.setText(buildOTPEmailTemplate(otp), true);
 
             mailSender.send(message);
-        } catch (MessagingException e) {
+            return true;
+        } catch (MessagingException | RuntimeException e) {
             System.err.println("Email sending failed: " + e.getMessage());
+            return false;
         }
     }
 
     @Async
     public void sendRegistrationConfirmation(String to, String studentName, String eventTitle,
-                                              String seatNumber, String registrationCode) {
+                                             String seatNumber, String registrationCode) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
             helper.setTo(to);
-            helper.setSubject("✅ Registration Confirmed - " + eventTitle);
+            helper.setFrom(mailUsername);
+            helper.setSubject("Registration Confirmed - " + eventTitle);
             helper.setText(buildRegistrationEmailTemplate(studentName, eventTitle, seatNumber, registrationCode), true);
 
             mailSender.send(message);
-        } catch (MessagingException e) {
+        } catch (MessagingException | RuntimeException e) {
             System.err.println("Email sending failed: " + e.getMessage());
         }
     }
@@ -84,11 +128,12 @@ public class EmailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
             helper.setTo(to);
-            helper.setSubject("⏰ Reminder: " + eventTitle + " is tomorrow!");
+            helper.setFrom(mailUsername);
+            helper.setSubject("Reminder: " + eventTitle + " is tomorrow!");
             helper.setText(buildReminderEmailTemplate(studentName, eventTitle, eventDate), true);
 
             mailSender.send(message);
-        } catch (MessagingException e) {
+        } catch (MessagingException | RuntimeException e) {
             System.err.println("Email sending failed: " + e.getMessage());
         }
     }
@@ -100,11 +145,12 @@ public class EmailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
             helper.setTo(to);
-            helper.setSubject("🎓 Certificate Available - " + eventTitle);
+            helper.setFrom(mailUsername);
+            helper.setSubject("Certificate Available - " + eventTitle);
             helper.setText(buildCertificateEmailTemplate(studentName, eventTitle), true);
 
             mailSender.send(message);
-        } catch (MessagingException e) {
+        } catch (MessagingException | RuntimeException e) {
             System.err.println("Email sending failed: " + e.getMessage());
         }
     }
@@ -113,7 +159,7 @@ public class EmailService {
         return """
             <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
                 <div style="background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
-                    <h1 style="color: white; margin: 0;">🎓 Smart Campus</h1>
+                    <h1 style="color: white; margin: 0;">Smart Campus</h1>
                     <p style="color: rgba(255,255,255,0.9); margin-top: 5px;">Event Management System</p>
                 </div>
                 <div style="background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; border-radius: 0 0 10px 10px;">
@@ -132,10 +178,10 @@ public class EmailService {
         return """
             <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
                 <div style="background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
-                    <h1 style="color: white; margin: 0;">🎓 Smart Campus</h1>
+                    <h1 style="color: white; margin: 0;">Smart Campus</h1>
                 </div>
                 <div style="background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; border-radius: 0 0 10px 10px;">
-                    <h2 style="color: #28a745;">✅ Registration Confirmed!</h2>
+                    <h2 style="color: #28a745;">Registration Confirmed!</h2>
                     <p>Dear <strong>%s</strong>,</p>
                     <p>You have successfully registered for:</p>
                     <div style="background: #f8f9fa; border-left: 4px solid #667eea; padding: 15px; margin: 15px 0; border-radius: 5px;">
@@ -153,7 +199,7 @@ public class EmailService {
         return """
             <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
                 <div style="background: linear-gradient(135deg, #f093fb 0%%, #f5576c 100%%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
-                    <h1 style="color: white; margin: 0;">⏰ Event Reminder</h1>
+                    <h1 style="color: white; margin: 0;">Event Reminder</h1>
                 </div>
                 <div style="background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; border-radius: 0 0 10px 10px;">
                     <p>Dear <strong>%s</strong>,</p>
@@ -168,7 +214,7 @@ public class EmailService {
         return """
             <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
                 <div style="background: linear-gradient(135deg, #f093fb 0%%, #f5576c 100%%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
-                    <h1 style="color: white; margin: 0;">🎓 Certificate Available</h1>
+                    <h1 style="color: white; margin: 0;">Certificate Available</h1>
                 </div>
                 <div style="background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; border-radius: 0 0 10px 10px;">
                     <p>Dear <strong>%s</strong>,</p>
@@ -177,5 +223,19 @@ public class EmailService {
                 </div>
             </div>
             """.formatted(name, event);
+    }
+
+    private boolean isMailConfigured() {
+        return StringUtils.hasText(mailUsername) && StringUtils.hasText(mailPassword);
+    }
+
+    private String normalizeEmail(String email) {
+        return email == null ? "" : email.trim().toLowerCase();
+    }
+
+    private record OtpEntry(String code, Instant expiresAt) {
+    }
+
+    public record OtpDispatchResult(boolean delivered, String message) {
     }
 }

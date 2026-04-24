@@ -16,13 +16,20 @@ import java.util.List;
 @RequestMapping("/student")
 public class StudentController {
 
-    @Autowired private StudentService studentService;
-    @Autowired private EventService eventService;
-    @Autowired private RegistrationService registrationService;
-    @Autowired private FeedbackService feedbackService;
-    @Autowired private CertificateService certificateService;
-    @Autowired private RecommendationService recommendationService;
-    @Autowired private QRCodeService qrCodeService;
+    @Autowired
+    private StudentService studentService;
+    @Autowired
+    private EventService eventService;
+    @Autowired
+    private RegistrationService registrationService;
+    @Autowired
+    private FeedbackService feedbackService;
+    @Autowired
+    private CertificateService certificateService;
+    @Autowired
+    private RecommendationService recommendationService;
+    @Autowired
+    private QRCodeService qrCodeService;
 
     @Value("${google.maps.api.key:}")
     private String googleMapsApiKey;
@@ -43,9 +50,9 @@ public class StudentController {
 
     @GetMapping("/events")
     public String browseEvents(@RequestParam(required = false) String category,
-                               @RequestParam(required = false) String department,
-                               @RequestParam(required = false) String search,
-                               Model model) {
+            @RequestParam(required = false) String department,
+            @RequestParam(required = false) String search,
+            Model model) {
         List<Event> events;
         if (search != null && !search.isEmpty()) {
             events = eventService.searchEvents(search);
@@ -74,9 +81,11 @@ public class StudentController {
             List<Registration> regs = registrationService.findByStudentId(student.getId());
             isRegistered = regs.stream().anyMatch(r -> r.getEvent().getId().equals(id)
                     && r.getStatus() == Registration.RegistrationStatus.CONFIRMED);
-        } catch (Exception e) { /* ignore */ }
+        } catch (Exception e) {
+            /* ignore */ }
 
         model.addAttribute("event", event);
+        model.addAttribute("student", student);
         model.addAttribute("isRegistered", isRegistered);
         model.addAttribute("googleMapsApiKey", googleMapsApiKey);
         return "student/event-details";
@@ -91,11 +100,23 @@ public class StudentController {
     }
 
     @GetMapping("/registration/{regId}/qr")
-    public ResponseEntity<byte[]> downloadQR(@PathVariable Long regId) {
+    public ResponseEntity<byte[]> downloadQR(@PathVariable Long regId, Authentication auth) {
         try {
-            Registration reg = registrationService.findByRegistrationCode(null).orElse(null);
-            // Generate QR from registration data
-            String qrData = "RegID:" + regId;
+            Student student = studentService.findByEmail(auth.getName()).orElseThrow();
+            Registration reg = registrationService.findById(regId)
+                    .orElseThrow(() -> new RuntimeException("Registration not found"));
+
+            // Allow download only for the owning student
+            if (!reg.getStudent().getId().equals(student.getId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
+            // Generate QR from actual registration data
+            String qrData = String.format("StudentID:%s|EventID:%d|Seat:%s|RegCode:%s",
+                    student.getStudentId(),
+                    reg.getEvent().getId(),
+                    reg.getSeatNumber(),
+                    reg.getRegistrationCode());
             byte[] qrImage = java.util.Base64.getDecoder().decode(qrCodeService.generateQRCodeBase64(qrData));
             return ResponseEntity.ok()
                     .contentType(MediaType.IMAGE_PNG)
@@ -122,7 +143,7 @@ public class StudentController {
 
     @PostMapping("/feedback")
     public String submitFeedback(@RequestParam Long eventId, @RequestParam int rating,
-                                 @RequestParam String comments, Authentication auth) {
+            @RequestParam String comments, Authentication auth) {
         Student student = studentService.findByEmail(auth.getName()).orElseThrow();
         Event event = eventService.findById(eventId).orElseThrow();
         Feedback feedback = Feedback.builder()

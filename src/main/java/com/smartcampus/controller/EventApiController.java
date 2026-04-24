@@ -22,8 +22,20 @@ public class EventApiController {
     @PostMapping("/otp/send")
     public ResponseEntity<?> sendOTP(@RequestBody Map<String, String> request) {
         String email = request.get("email");
-        emailService.generateOTP(email);
-        return ResponseEntity.ok(Map.of("message", "OTP sent successfully"));
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Email is required"));
+        }
+
+        EmailService.OtpDispatchResult result = emailService.generateOTP(email);
+        if (result.delivered()) {
+            return ResponseEntity.ok(Map.of(
+                    "delivered", true,
+                    "message", "OTP sent successfully"));
+        }
+
+        return ResponseEntity.status(503).body(Map.of(
+                "delivered", false,
+                "message", result.message() + " Please configure MAIL_USERNAME and MAIL_PASSWORD."));
     }
 
     @PostMapping("/otp/verify")
@@ -44,7 +56,14 @@ public class EventApiController {
             Long eventId = Long.valueOf(request.get("eventId").toString());
             String seatLabel = request.get("seatLabel").toString();
             Student student = studentService.findByEmail(auth.getName()).orElseThrow();
+            if (!emailService.hasOtpVerification(student.getEmail())) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "success", false,
+                        "message", "Invalid or expired OTP. Please verify your email first."));
+            }
+
             var reg = registrationService.registerForEvent(student, eventId, seatLabel);
+            emailService.consumeOtpVerification(student.getEmail());
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "registrationCode", reg.getRegistrationCode(),

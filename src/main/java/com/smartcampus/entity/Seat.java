@@ -29,6 +29,7 @@ public class Seat {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Builder.Default
     private SeatStatus status = SeatStatus.AVAILABLE;
 
     @ManyToOne(fetch = FetchType.LAZY)

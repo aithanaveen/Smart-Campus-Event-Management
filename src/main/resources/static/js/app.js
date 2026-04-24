@@ -2,7 +2,6 @@
  * Smart Campus - Main Application JavaScript
  */
 
-// OTP Verification Flow
 function sendOTP() {
     const email = document.getElementById('otpEmail').value;
     if (!email) {
@@ -19,15 +18,22 @@ function sendOTP() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => {
+                throw new Error(err.message || 'Failed to send OTP');
+            });
+        }
+        return response.json();
+    })
     .then(data => {
-        showToast('OTP sent to your email!', 'success');
+        showToast(data.message || 'OTP sent to your email!', 'success');
         document.getElementById('otpSection').style.display = 'block';
         btn.innerHTML = 'Resend OTP';
         btn.disabled = false;
     })
     .catch(error => {
-        showToast('Failed to send OTP', 'error');
+        showToast(error.message || 'Failed to send OTP', 'error');
         btn.innerHTML = 'Send OTP';
         btn.disabled = false;
     });
@@ -35,9 +41,9 @@ function sendOTP() {
 
 function verifyOTP() {
     const email = document.getElementById('otpEmail').value;
-    const otp = document.getElementById('otpInput').value;
+    const otp = document.getElementById('otpInput').value.trim();
 
-    if (!otp || otp.length !== 6) {
+    if (!/^\d{6}$/.test(otp)) {
         showToast('Please enter a valid 6-digit OTP', 'error');
         return;
     }
@@ -47,21 +53,26 @@ function verifyOTP() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email, otp: otp })
     })
-    .then(response => response.json())
+    .then(response => response.json().then(data => ({
+        ok: response.ok,
+        data: data
+    })))
     .then(data => {
-        if (data.verified) {
-            showToast('OTP Verified!', 'success');
+        if (data.ok && data.data.verified) {
+            showToast('OTP verified!', 'success');
             document.getElementById('otpVerified').value = 'true';
-            document.getElementById('otpBadge').innerHTML = '<span class="badge bg-success">✓ Verified</span>';
-            document.getElementById('proceedBookingBtn').disabled = false;
+            document.getElementById('otpBadge').innerHTML = '<span class="badge bg-success">Verified</span>';
+            const bookBtn = document.getElementById('bookSeatBtn');
+            if (bookBtn && document.getElementById('seatLabelInput').value) {
+                bookBtn.disabled = false;
+            }
         } else {
-            showToast('Invalid OTP. Please try again.', 'error');
+            showToast(data.data.message || 'Invalid OTP. Please try again.', 'error');
         }
     })
-    .catch(error => showToast('Verification failed', 'error'));
+    .catch(() => showToast('Verification failed', 'error'));
 }
 
-// Event Registration
 function registerForEvent(eventId) {
     const seatLabel = document.getElementById('seatLabelInput').value;
     if (!seatLabel) {
@@ -69,34 +80,44 @@ function registerForEvent(eventId) {
         return;
     }
 
+    const studentId = document.getElementById('studentIdInput').value;
+    const isVerified = document.getElementById('otpVerified').value === 'true';
+
+    if (!isVerified) {
+        showToast('Please verify your email with OTP first', 'error');
+        return;
+    }
+
     const btn = document.getElementById('bookSeatBtn');
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Registering...';
 
-    fetch('/api/register-event', {
+    fetch('/api/seats/book', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ eventId: eventId, seatLabel: seatLabel })
+        body: JSON.stringify({
+            eventId: eventId,
+            seatLabel: seatLabel,
+            studentId: studentId
+        })
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showToast('Registration successful! Code: ' + data.registrationCode, 'success');
-            setTimeout(() => window.location.href = '/student/my-registrations', 2000);
-        } else {
-            showToast(data.message, 'error');
-            btn.disabled = false;
-            btn.innerHTML = 'Confirm Booking';
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => { throw new Error(err.error || err.message || 'Registration failed') });
         }
+        return response.json();
+    })
+    .then(data => {
+        showToast('Registration successful! Code: ' + (data.registrationCode || 'N/A'), 'success');
+        setTimeout(() => window.location.href = '/student/my-registrations', 2000);
     })
     .catch(error => {
-        showToast('Registration failed', 'error');
+        showToast(error.message || 'Registration failed', 'error');
         btn.disabled = false;
         btn.innerHTML = 'Confirm Booking';
     });
 }
 
-// Toast notification
 function showToast(message, type) {
     const toastContainer = document.getElementById('toastContainer') || createToastContainer();
     const toast = document.createElement('div');
@@ -115,12 +136,12 @@ function createToastContainer() {
     return container;
 }
 
-// Initialize Google Maps
 function initMap(lat, lng, venueName) {
     if (typeof google === 'undefined') return;
     const location = { lat: lat, lng: lng };
     const map = new google.maps.Map(document.getElementById('eventMap'), {
-        zoom: 15, center: location,
+        zoom: 15,
+        center: location,
         styles: [
             { elementType: 'geometry', stylers: [{ color: '#242f3e' }] },
             { elementType: 'labels.text.stroke', stylers: [{ color: '#242f3e' }] },
