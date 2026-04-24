@@ -4,7 +4,7 @@ import com.smartcampus.entity.Admin;
 import com.smartcampus.entity.Student;
 import com.smartcampus.repository.AdminRepository;
 import com.smartcampus.repository.StudentRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,13 +16,11 @@ import java.util.Collections;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
-    @Autowired
-    private StudentRepository studentRepository;
-
-    @Autowired
-    private AdminRepository adminRepository;
+    private final StudentRepository studentRepository;
+    private final AdminRepository adminRepository;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {

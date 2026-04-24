@@ -3,7 +3,7 @@ package com.smartcampus.service;
 import com.smartcampus.entity.Event;
 import com.smartcampus.repository.EventRepository;
 import com.smartcampus.repository.RegistrationRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -11,13 +11,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class RecommendationService {
 
-    @Autowired
-    private EventRepository eventRepository;
-
-    @Autowired
-    private RegistrationRepository registrationRepository;
+    private final EventRepository eventRepository;
+    private final RegistrationRepository registrationRepository;
 
     public List<Event> getRecommendations(Long studentId, String department, String interests) {
         List<Event> upcoming = eventRepository.findUpcomingEvents(LocalDate.now());

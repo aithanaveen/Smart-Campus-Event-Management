@@ -4,7 +4,7 @@ import com.smartcampus.entity.Student;
 import com.smartcampus.service.EmailService;
 import com.smartcampus.service.RegistrationService;
 import com.smartcampus.service.StudentService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -13,11 +13,12 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
+@RequiredArgsConstructor
 public class EventApiController {
 
-    @Autowired private EmailService emailService;
-    @Autowired private RegistrationService registrationService;
-    @Autowired private StudentService studentService;
+    private final EmailService emailService;
+    private final RegistrationService registrationService;
+    private final StudentService studentService;
 
     @PostMapping("/otp/send")
     public ResponseEntity<?> sendOTP(@RequestBody Map<String, String> request) {

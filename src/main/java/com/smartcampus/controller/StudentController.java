@@ -2,7 +2,7 @@ package com.smartcampus.controller;
 
 import com.smartcampus.entity.*;
 import com.smartcampus.service.*;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
@@ -14,22 +14,16 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/student")
+@RequiredArgsConstructor
 public class StudentController {
 
-    @Autowired
-    private StudentService studentService;
-    @Autowired
-    private EventService eventService;
-    @Autowired
-    private RegistrationService registrationService;
-    @Autowired
-    private FeedbackService feedbackService;
-    @Autowired
-    private CertificateService certificateService;
-    @Autowired
-    private RecommendationService recommendationService;
-    @Autowired
-    private QRCodeService qrCodeService;
+    private final StudentService studentService;
+    private final EventService eventService;
+    private final RegistrationService registrationService;
+    private final FeedbackService feedbackService;
+    private final CertificateService certificateService;
+    private final RecommendationService recommendationService;
+    private final QRCodeService qrCodeService;
 
     @Value("${google.maps.api.key:}")
     private String googleMapsApiKey;

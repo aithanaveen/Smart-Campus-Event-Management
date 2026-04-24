@@ -6,7 +6,7 @@ import com.smartcampus.entity.Seat;
 import com.smartcampus.repository.AdminRepository;
 import com.smartcampus.repository.EventRepository;
 import com.smartcampus.repository.SeatRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,10 +19,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
+@RequiredArgsConstructor
 public class DataInitializer {
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     @Bean
     CommandLineRunner initData(AdminRepository adminRepo, EventRepository eventRepo, SeatRepository seatRepo) {

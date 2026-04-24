@@ -4,7 +4,7 @@ import com.smartcampus.dto.DashboardStats;
 import com.smartcampus.entity.*;
 import com.smartcampus.service.*;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -17,18 +17,14 @@ import java.util.Map;
 
 @Controller
 @RequestMapping("/admin")
+@RequiredArgsConstructor
 public class AdminController {
 
-    @Autowired
-    private EventService eventService;
-    @Autowired
-    private StudentService studentService;
-    @Autowired
-    private RegistrationService registrationService;
-    @Autowired
-    private AttendanceService attendanceService;
-    @Autowired
-    private FeedbackService feedbackService;
+    private final EventService eventService;
+    private final StudentService studentService;
+    private final RegistrationService registrationService;
+    private final AttendanceService attendanceService;
+    private final FeedbackService feedbackService;
 
     @GetMapping("/dashboard")
     public String dashboard(Model model) {

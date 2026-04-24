@@ -7,7 +7,7 @@ import com.smartcampus.service.SeatService;
 import com.smartcampus.service.StudentService;
 import com.smartcampus.service.EmailService;
 import com.smartcampus.service.RegistrationService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -17,19 +17,13 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/seats")
+@RequiredArgsConstructor
 public class SeatApiController {
 
-    @Autowired
-    private SeatService seatService;
-
-    @Autowired
-    private StudentService studentService;
-
-    @Autowired
-    private EmailService emailService;
-
-    @Autowired
-    private RegistrationService registrationService;
+    private final SeatService seatService;
+    private final StudentService studentService;
+    private final EmailService emailService;
+    private final RegistrationService registrationService;
 
     @GetMapping("/{eventId}")
     public ResponseEntity<List<SeatDTO>> getSeats(@PathVariable Long eventId) {

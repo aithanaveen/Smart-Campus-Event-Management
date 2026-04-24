@@ -4,7 +4,7 @@ import com.smartcampus.dto.SeatDTO;
 import com.smartcampus.entity.Seat;
 import com.smartcampus.entity.Student;
 import com.smartcampus.repository.SeatRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,13 +14,11 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class SeatService {
 
-    @Autowired
-    private SeatRepository seatRepository;
-
-    @Autowired
-    private SimpMessagingTemplate messagingTemplate;
+    private final SeatRepository seatRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     public List<SeatDTO> getSeatsByEventId(Long eventId) {
         List<Seat> seats = seatRepository.findByEventIdOrderBySeatRowAscSeatColAsc(eventId);

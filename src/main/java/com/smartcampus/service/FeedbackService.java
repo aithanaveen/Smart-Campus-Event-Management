@@ -2,17 +2,17 @@ package com.smartcampus.service;
 
 import com.smartcampus.entity.Feedback;
 import com.smartcampus.repository.FeedbackRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class FeedbackService {
 
-    @Autowired
-    private FeedbackRepository feedbackRepository;
+    private final FeedbackRepository feedbackRepository;
 
     public Feedback submitFeedback(Feedback feedback) {
         if (feedbackRepository.existsByStudentIdAndEventId(

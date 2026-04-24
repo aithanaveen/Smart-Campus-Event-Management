@@ -5,7 +5,7 @@ import com.smartcampus.repository.EventRepository;
 import com.smartcampus.repository.RegistrationRepository;
 import com.smartcampus.repository.SeatRepository;
 import com.smartcampus.entity.Seat;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -13,16 +13,12 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ChatbotService {
 
-    @Autowired
-    private EventRepository eventRepository;
-
-    @Autowired
-    private RegistrationRepository registrationRepository;
-
-    @Autowired
-    private SeatRepository seatRepository;
+    private final EventRepository eventRepository;
+    private final RegistrationRepository registrationRepository;
+    private final SeatRepository seatRepository;
 
     @Value("${openai.api.key:not-configured}")
     private String openaiApiKey;
